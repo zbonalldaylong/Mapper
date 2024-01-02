@@ -1,0 +1,10 @@
+pandas
+regex
+plotly
+json
+numpy
+geopandas
+pathlib
+shapely.geometry
+zipfile
+array
