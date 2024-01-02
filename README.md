@@ -11,3 +11,11 @@ Script to output a customized world map that combines Plotly/Mapbox base map wit
 * Labels for countries, cities, and irregular markers can be adjusted for size and position via the _label_adjuster() function. 
 * Script is able to output chloropleth maps; however, (csv) input data must be formatted correctly (the current mapper.py has Ontario renewables data input and adjusted as an example)
 
+## Examples
+
+### Ukraine War Map
+
+### DRC Food Scarcity
+
+### Ontario Renewable Projects Pipeline
+
