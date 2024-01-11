@@ -27,67 +27,67 @@ Script to output a customized world map that combines Plotly/Mapbox base map wit
 ## Running from Command Line 
 
 ### Flags
--h : display help
+-h : display help<br>
 -mtoken : provide your own mapbox token to generate base map (see: https://docs.mapbox.com/help/getting-started/access-tokens/)
 
 ### Display Toggles
--snats : display subnational borders for states/provinces (default off) 
--natlabels : display state labels (default off)
--snatlabels : display subnational labels (default off)
+-snats : display subnational borders for states/provinces (default off) <br>
+-natlabels : display state labels (default off)<br>
+-snatlabels : display subnational labels (default off)<br>
 
 ### Features
--nat_list country1+country2+country3, etc. : specify which countries to include on map; use _ for spaces ('United_States_of_America')
--snat_list snat1+snat2+snat3, etc. : specify which provinces to include on map; use _ for spaces ('British_Columbia')
--city_list city1+city2+city3, etc. : specify cities to include on map; use _ for spaces ('Addis_Ababa')
+-nat_list country1+country2+country3, etc. : specify which countries to include on map; use _ for spaces ('United_States_of_America')<br>
+-snat_list snat1+snat2+snat3, etc. : specify which provinces to include on map; use _ for spaces ('British_Columbia')<br>
+-city_list city1+city2+city3, etc. : specify cities to include on map; use _ for spaces ('Addis_Ababa')<br>
 
 ### Custom Features / Markers
 
 Custom features will be loaded and mapped automatically if the features subdirectory contains a file named feature_1.geojson; other features will be loaded as well (feature_2.geojson, etc.)
 Refer to custom feature styling options below to customize their appearance. 
 
--cmarker name>lon>lat>label_position :  Place a custom point on the map by longitude and latitude (example: Taj_Mahal>78.04206>27.17389>middle_right)
+-cmarker name>lon>lat>label_position :  Place a custom point on the map by longitude and latitude (example: Taj_Mahal>78.04206>27.17389>middle_right)<br>
 
 ### Formatting Toggles
--background_color : Override the background color of the map (formatted as color code; default #ede7f1)
--nat_border_opacity : Override opacity of national borders (default 1)
--nat_border_width : Override width of national borders (default 1) 
--nat_border_color :Override color of national borders (default #282828)
--subnat_border_opacity : Override opacity of subnational borders (default 0.5)
--subnat_border_width : Override width of subnational borders (default 0.5)
--subnat_border_color : Override color of subnational borders (default #282828)
+-background_color : Override the background color of the map (formatted as color code; default #ede7f1)<br>
+-nat_border_opacity : Override opacity of national borders (default 1)<br>
+-nat_border_width : Override width of national borders (default 1) <br>
+-nat_border_color :Override color of national borders (default #282828)<br>
+-subnat_border_opacity : Override opacity of subnational borders (default 0.5)<br>
+-subnat_border_width : Override width of subnational borders (default 0.5)<br>
+-subnat_border_color : Override color of subnational borders (default #282828)<br>
 
 Markers/Cities<br>
--city_text_size : Override text size of city labels (default 12)
--city_text_color : Override text color for city labels (default #241f20)
--marker_size : Override size of marker for cities (default 8)
--marker_color : Override color of marker for cities (default #241f20)
+-city_text_size : Override text size of city labels (default 12)<br>
+-city_text_color : Override text color for city labels (default #241f20)<br>
+-marker_size : Override size of marker for cities (default 8)<br>
+-marker_color : Override color of marker for cities (default #241f20)<br>
 
 Labels<br>
--nat_label_opacity : Override opacity of national labels (default 0.7)
--nat_label_size : Override text size for national labels (default 30)
--nat_label_color : Overide color for national labels (default #282828)
--subnat_label_opacity : Override opacity for subnational labels (default 0.5)
--subnat_label_size : Override text size for subnational labels (default 15)
--subnat_label_color : Override color for subnational labels (default #282828)
+-nat_label_opacity : Override opacity of national labels (default 0.7)<br>
+-nat_label_size : Override text size for national labels (default 30)<br>
+-nat_label_color : Overide color for national labels (default #282828)<br>
+-subnat_label_opacity : Override opacity for subnational labels (default 0.5)<br>
+-subnat_label_size : Override text size for subnational labels (default 15)<br>
+-subnat_label_color : Override color for subnational labels (default #282828)<br>
 
 Custom Feature Styling (geojsons)<br>
--feature_color : note format this as a rgba color code to adjust opacity (default rgba(202, 52, 51, 0.5))
--feature_fill_opacity : (default 0.25)
--feature_border_opacity : (default 0.75)
--feature_border_width : (default 1)
--feature_border_color : (default #282828)
+-feature_color : note format this as a rgba color code to adjust opacity (default rgba(202, 52, 51, 0.5))<br>
+-feature_fill_opacity : (default 0.25)<br>
+-feature_border_opacity : (default 0.75)<br>
+-feature_border_width : (default 1)<br>
+-feature_border_color : (default #282828)<br>
 
 ### Label Adjustments
 
 Labels occasionally require manual adjustment depending on map context. This can be achieved using the following commands:
 
--labelpos : Changes label position of a city or feature; format as city+label_position 
-Note: Label position options include 'top right' 'bottom right' 'top left' 'middle left' 'top center', etc. 
+-labelpos : Changes label position of a city or feature; format as city+label_position <br>
+Note: Label position options include 'top right' 'bottom right' 'top left' 'middle left' 'top center', etc. <br>
 Examples: -labelpos Vancouver>middle_right+Kamloops>bottom_left
 
--labeladjust : Changes the size and position of subnat and nat labels ; format as label_name>label_position>shift_extent+size 
-Note: Label shifting extent is approximately 4 per inch ; label size is a multiplier of current value (for example, 2 is 2x) ; countries can be repeated for finishing touches 
-Examples: -labeladjust United_States_of_America>top_left>10>2+Canada>bottom_left>4>1
+-labeladjust : Changes the size and position of subnat and nat labels ; format as label_name>label_position>shift_extent+size <br>
+Note: Label shifting extent is approximately 4 per inch ; label size is a multiplier of current value (for example, 2 is 2x) ; countries can be repeated for finishing touches <br>
+Examples: -labeladjust United_States_of_America>top_left>10>2+Canada>bottom_left>4>1<br>
 
 ### Command Line Examples
 
