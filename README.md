@@ -56,13 +56,13 @@ Refer to custom feature styling options below to customize their appearance.
 -subnat_border_width : Override width of subnational borders (default 0.5)
 -subnat_border_color : Override color of subnational borders (default #282828)
 
-Markers/Cities
+Markers/Cities<br>
 -city_text_size : Override text size of city labels (default 12)
 -city_text_color : Override text color for city labels (default #241f20)
 -marker_size : Override size of marker for cities (default 8)
 -marker_color : Override color of marker for cities (default #241f20)
 
-Labels
+Labels<br>
 -nat_label_opacity : Override opacity of national labels (default 0.7)
 -nat_label_size : Override text size for national labels (default 30)
 -nat_label_color : Overide color for national labels (default #282828)
@@ -70,7 +70,7 @@ Labels
 -subnat_label_size : Override text size for subnational labels (default 15)
 -subnat_label_color : Override color for subnational labels (default #282828)
 
-Custom Feature Styling (geojsons)
+Custom Feature Styling (geojsons)<br>
 -feature_color : note format this as a rgba color code to adjust opacity (default rgba(202, 52, 51, 0.5))
 -feature_fill_opacity : (default 0.25)
 -feature_border_opacity : (default 0.75)
