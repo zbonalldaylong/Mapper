@@ -23,29 +23,27 @@ from pandas import json_normalize
 map_settings = {
     "nat_toggle": True,  # show specific countries or world
     "nat_label_toggle": False,  # show national labels
-    "subnat_toggle": True,  # show subnational regions (provinces, states, eg)
+    "subnat_toggle": False,  # show subnational regions (provinces, states, eg)
     "subnat_label_toggle": False,  # show subnat labels
-    "subnat_highlight_toggle": True,  # specify and highlight a subnat
+    "subnat_highlight_toggle": False,  # specify and highlight a subnat
     "city_toggle": True,  # show cities
-    "chloro_toggle": True,  # apply a chloro map
-    "csv_toggle": True,  # apply data from a csv file
+    "chloro_toggle": False,  # apply a chloro map
+    "csv_toggle": False,  # apply data from a csv file
     "irregular_marker_toggle": False,  # map irregular features onto the map using custom lon/lats (csv or otherwise)
-    "irregular_feature_toggle": True
-    if exists(Path(__file__).parent / "features/feature_1.geojson")
-    else False,  # Draw custom highways, etc.; checks features directory
+    "irregular_feature_toggle": True if exists(Path(__file__).parent / 'features/feature_1.geojson') else False #Draw custom highways, etc.; checks features directory
 }
 
 map_content = {
-    "country_list": ["Canada"],  # Countries to be displayed
+    "country_list": [],  # Countries to be displayed
     # Format: [city name, label position]
     "city_list": [],
     # Note: Works with either the name of a province or the name of a country, in which case all provinces of said country will be mapped.
-    "subnat_list": ["Ontario"],
+    "subnat_list": [],
     # Format: [label, direction, extent, size_override (0 for unchanged)] / Direction: 'top-right', 'bottom-right', 'right', 'top', etc. / Size: multiplier for adjustment (eg 2 = 2x)
     # Note: For more finicky adjustments run the same country through the list twice.
     "label_adjusts": [[]],
     # CSV list - nats and subnats for which the csv data will apply to.
-    "csv_list": ["Canada"],
+    "csv_list": [],
     # Irregular features comes in dict form for easy importing of outside data sources.
     "irregular_markers": [
         {
@@ -66,9 +64,9 @@ map_styling = {
     "subnat_border_width": 0.5,
     "subnat_border_color": "#282828",
     # CITIES / MARKERS
-    "city_text_size": 12,
+    "city_text_size": 20,
     "city_text_color": "#241f20",
-    "marker_size": 8,
+    "marker_size": 15,
     "marker_color": "#241f20",
     # FEATURES
     "feature_color": "rgba(202, 52, 51, 0.5)",
@@ -81,7 +79,7 @@ map_styling = {
     "nat_label_size": 30,
     "nat_label_color": "#282828",
     "subnat_label_opacity": 0.5,
-    "subnat_label_size": 15,
+    "subnat_label_size": 35,
     "subnat_label_color": "#282828",
 }
 
@@ -341,7 +339,7 @@ class MapBuilder:
                             fillcolor=self.styling["nat_label_color"],
                             opacity=self.styling["nat_label_opacity"],
                             textposition="middle center",
-                            # Adjusts on the basis of country size
+                            # Adjusts nat labels on the basis of country size
                             textfont=dict(
                                 size=self.styling["nat_label_size"] * 1.5
                                 if row["size"] > 150
@@ -359,10 +357,17 @@ class MapBuilder:
                                 color=self.styling["nat_label_color"],
                             ),
                         ),
+            else:
+                pass
 
-            if self.config["subnat_label_toggle"] == True:
+            # Adjusts subnat labels on the basis of size
+            if (
+                self.config["subnat_label_toggle"] == True
+                and len(self.content["subnat_list"]) > 0
+            ):
                 for x in self.content["subnat_list"]:
                     if x not in self.content["country_list"]:
+
                         fig.add_scattermapbox(
                             lat=[self.label_df.loc[x]["centroid"][1]],
                             lon=[self.label_df.loc[x]["centroid"][0]],
@@ -378,20 +383,54 @@ class MapBuilder:
                                 if self.label_df.loc[x]["size"] > 150
                                 else self.styling["subnat_label_size"]
                                 if self.label_df.loc[x]["size"] > 110
-                                else (self.styling["subnat_label_size"] * 0.8)
+                                else (self.styling["subnat_label_size"] * 0.9)
                                 if self.label_df.loc[x]["size"] > 80
-                                else (self.styling["subnat_label_size"] * 0.65)
+                                else (self.styling["subnat_label_size"] * 0.80)
                                 if self.label_df.loc[x]["size"] > 50
-                                else (self.styling["subnat_label_size"] * 0.45)
+                                else (self.styling["subnat_label_size"] * 0.60)
                                 if self.label_df.loc[x]["size"] > 30
-                                else (self.styling["subnat_label_size"] * 0.35)
+                                else (self.styling["subnat_label_size"] * 0.50)
                                 if self.label_df.loc[x]["size"] > 10
                                 else 10,
                                 color=self.styling["subnat_label_color"],
                             ),
                         ),
 
-        def _draw_countries():
+            if (
+                self.config["subnat_label_toggle"] == True
+                and len(self.content["subnat_list"]) == 0
+            ):
+                for index, row in self.label_df.iterrows():
+                    if row["type"] == "subnat":
+                        fig.add_scattermapbox(
+                            lat=[row["centroid"][1]],
+                            lon=[row["centroid"][0]],
+                            showlegend=False,
+                            mode="text",
+                            text=index.upper(),
+                            fillcolor=self.styling["subnat_label_color"],
+                            opacity=self.styling["subnat_label_opacity"],
+                            textposition="middle center",
+                            # Adjusts on the basis of country size
+                            textfont=dict(
+                                size=self.styling["subnat_label_size"] * 1.5
+                                if row["size"] > 150
+                                else self.styling["subnat_label_size"]
+                                if row["size"] > 110
+                                else (self.styling["subnat_label_size"] * 0.9)
+                                if row["size"] > 80
+                                else (self.styling["subnat_label_size"] * 0.80)
+                                if row["size"] > 50
+                                else (self.styling["subnat_label_size"] * 0.60)
+                                if row["size"] > 30
+                                else (self.styling["subnat_label_size"] * 0.50)
+                                if row["size"] > 10
+                                else 10,
+                                color=self.styling["subnat_label_color"],
+                            ),
+                        ),
+
+        def _draw_countries(outline=False):
             """Draws external (national) borders."""
 
             def __crunch_countries():
@@ -437,25 +476,42 @@ class MapBuilder:
                     {"type": "FeatureCollection", "features": countries_slice}
                 )
 
-            self.external_borders = __crunch_countries()
+            if outline == False:
+                self.external_borders = __crunch_countries()
 
-            # Add external borders to overall figure
-            fig.add_scattermapbox(
-                lat=self.external_borders[1],
-                lon=self.external_borders[0],
-                showlegend=False,
-                mode="lines",
-                fillcolor=self.styling["background_color"],
-                fill="toself"
-                if self.config["chloro_toggle"] == False
-                and self.config["subnat_toggle"] == False
-                else "none",
-                opacity=self.styling["nat_border_opacity"],
-                line=dict(
-                    width=self.styling["nat_border_width"],
-                    color=self.styling["nat_border_color"],
-                ),
-            )
+                # Add external borders to overall figure
+                fig.add_scattermapbox(
+                    lat=self.external_borders[1],
+                    lon=self.external_borders[0],
+                    showlegend=False,
+                    mode="lines",
+                    fillcolor=self.styling["background_color"],
+                    fill="toself"
+                    if self.config["chloro_toggle"] == False
+                    and self.config["subnat_toggle"] == False
+                    else "none",
+                    opacity=self.styling["nat_border_opacity"],
+                    line=dict(
+                        width=self.styling["nat_border_width"],
+                        color=self.styling["nat_border_color"],
+                    ),
+                )
+
+            if outline == True:
+                # Add external borders to overall figure
+                fig.add_scattermapbox(
+                    lat=self.external_borders[1],
+                    lon=self.external_borders[0],
+                    showlegend=False,
+                    mode="lines",
+                    fillcolor=self.styling["background_color"],
+                    fill="none",
+                    opacity=self.styling["nat_border_opacity"],
+                    line=dict(
+                        width=self.styling["nat_border_width"],
+                        color=self.styling["nat_border_color"],
+                    ),
+                )
 
         def _draw_subnats():
             """Draws sub-national (regional/provincial/state) borders"""
@@ -473,6 +529,7 @@ class MapBuilder:
                         ) and i["properties"]["name"] not in exclusion_list:
                             i["id"] = i["properties"]["admin"]
                             subnats_slice.append(i)
+
                             # Store centroids in class df for labels
                             points, area = _get_geodata(
                                 {"type": ["FeatureCollection"], "features": [i]}
@@ -494,7 +551,24 @@ class MapBuilder:
                             and i["properties"]["name"] not in exclusion_list
                         ):
                             i["id"] = i["properties"]["admin"]
-                        subnats_slice.append(i)
+
+                            subnats_slice.append(i)
+
+                            # Store centroids in class df for labels
+                            points, area = _get_geodata(
+                                {"type": ["FeatureCollection"], "features": [i]}
+                            )
+
+                            new_entry = {
+                                "name": i["properties"]["name_en"],
+                                "centroid": points,
+                                "size": area,
+                                "position": "middle-right",
+                                "code": i["properties"]["iso_3166_2"].replace("-", ""),
+                                "type": "subnat",
+                            }
+
+                            labels_slice.append(new_entry)
 
                     # Avoid double-counting when multiple countries in country_list
                     exclusion_list.append(i["properties"]["name"])
@@ -510,22 +584,31 @@ class MapBuilder:
                     {"type": "FeatureCollection", "features": subnats_slice}
                 )
 
-            internal_borders = __crunch_subnats()
+            # Checks toggles and draws subnats
+            if (
+                self.config["subnat_toggle"] == True
+                or len(self.content["subnat_list"]) > 0
+            ):
 
-            # Add internal borders to figure
-            fig.add_scattermapbox(
-                lat=internal_borders[1],
-                lon=internal_borders[0],
-                showlegend=False,
-                mode="lines",
-                fillcolor=self.styling["background_color"],
-                fill="toself" if self.config["chloro_toggle"] == False else "none",
-                opacity=self.styling["subnat_border_opacity"],
-                line=dict(
-                    width=self.styling["subnat_border_width"],
-                    color=self.styling["subnat_border_color"],
-                ),
-            )
+                internal_borders = __crunch_subnats()
+
+                # Add internal borders to figure
+                fig.add_scattermapbox(
+                    lat=internal_borders[1],
+                    lon=internal_borders[0],
+                    showlegend=False,
+                    mode="lines",
+                    fillcolor=self.styling["background_color"],
+                    fill="toself" if self.config["chloro_toggle"] == False else "none",
+                    opacity=self.styling["subnat_border_opacity"],
+                    line=dict(
+                        width=self.styling["subnat_border_width"],
+                        color=self.styling["subnat_border_color"],
+                    ),
+                )
+
+            else:
+                pass
 
         def _draw_markers():
             """Draws cities and other notable features"""
@@ -721,7 +804,7 @@ class MapBuilder:
                 )
 
             # Map irregular features if there are any
-            if self.config["irregular_marker_toggle"] == True:
+            if len(self.content["irregular_markers"]) > 0:
                 for x in self.content["irregular_markers"]:
 
                     fig.add_scattermapbox(
@@ -819,18 +902,18 @@ class MapBuilder:
 
                 if direction == "top":
                     in_lat += degree
-                elif direction == "top-left":
+                elif direction == "top left":
                     in_lat += diagonals
                     in_lon -= diagonals
-                elif direction == "top-right":
+                elif direction == "top right":
                     in_lat += diagonals
                     in_lon += diagonals
                 elif direction == "bottom":
                     in_lat -= degree
-                elif direction == "bottom-left":
+                elif direction == "bottom left":
                     in_lat -= diagonals
                     in_lon -= diagonals
-                elif direction == "bottom-right":
+                elif direction == "bottom right":
                     in_lat -= diagonals
                     in_lon += diagonals
                 elif direction == "right":
@@ -839,12 +922,12 @@ class MapBuilder:
                     in_lon -= degree
                 return in_lon, in_lat
 
-            if len(self.content["label_adjusts"]) > 0:
+            if len(self.content["label_adjusts"]) > 1:
                 exclusion_list = []
                 for no, x in enumerate(fig.data):
                     if x.mode == "text" and x.text not in exclusion_list:
                         for y in self.content["label_adjusts"]:
-                            if y[0].upper() == x.text:
+                            if y[0].upper().replace("_", " ") == x.text:
                                 adjusted_lon, adjusted_lat = __shifter(
                                     fig.data[no].lon[0], fig.data[no].lat[0], y[1], y[2]
                                 )
@@ -869,23 +952,19 @@ class MapBuilder:
 
         # Execute drawing functions to build the map
         if self.config["chloro_toggle"] == False:
-            _draw_subnats()
+
             _draw_countries()
-            _draw_labels(nat=True)
+            _draw_subnats()
+            _draw_countries(outline=True)
+            _draw_labels()
             _draw_irregulars()
             _draw_markers()
             _label_adjuster()
 
-        if self.config["chloro_toggle"] == True:
-            _draw_subnats()
-            _draw_countries()
-            _draw_labels()
-            _draw_chloro()
-
             fig.update_layout(
                 coloraxis_showscale=True,
                 margin={"l": 0, "r": 0, "b": 0, "t": 25},
-                title="<b><i>Ontario Renewables Pipeline, Generation by District (2022, MW)<i><b>",
+                title="<b><i>Map<i><b>",
                 title_x=0.5,
                 font_family="Helvetica",
                 showlegend=True,
@@ -911,7 +990,9 @@ if __name__ == "__main__":
     map_token = os.getenv("MAP_TOKEN")
 
     if not map_token:
-        print("Missing env values for MAP_TOKEN")
+        print(
+            "Missing env values for MAP_TOKEN; Mapbox token required to create base map"
+        )
         sys.exit(1)
 
     pd.set_option("mode.chained_assignment", None)
@@ -919,177 +1000,213 @@ if __name__ == "__main__":
     pd.set_option("display.max_colwidth", None)
     warnings.filterwarnings("ignore")
 
+    def commandline_interpreter():
+
+        """Interprets command line arguments and makes necessary adjustments before class instantiation."""
+        command_list = [
+            "-h",
+            "-mtoken",
+            "-natlabels",
+            "-snats",
+            "-snatlabels",
+            "-nat_list",
+            "-snat_list",
+            "-city_list",
+            "-background_color",
+            "-nat_border_opacity",
+            "-nat_border_width",
+            "-nat_border_color",
+            "-subnat_border_opacity",
+            "-subnat_border_width",
+            "-subnat_border_color",
+            "-city_text_size",
+            "-city_text_color",
+            "-marker_size",
+            "-marker_color",
+            "-nat_label_opacity",
+            "-nat_label_size",
+            "-nat_label_color",
+            "-subnat_label_opacity",
+            "-subnat_label_size",
+            "-subnat_label_color",
+            "-labelpos",
+            "-labeladjust",
+            "-cfeature",
+            "-feature_color",
+            "-feature_fill_opacity",
+            "-feature_border_opacity",
+            "-feature_border_width",
+            "-feature_border_color",
+        ]
+
+        # No arguments provided (bypasses command line arguments)
+        if len(sys.argv) == 1:
+            pass
+        # Check for proper commands (this will only catch improper spelling for a command that starts with '-')
+        else:
+            difference = set(sys.argv[1:]).difference(set(command_list))
+            if "-" in [x[0] for x in difference]:
+                print(
+                    "Received an unrecognized command-line argument. Please try again"
+                )
+                sys.exit()
+            else:
+                pass
+
+        # Adjust toggles based on command line arguments
+        # Help/Readme
+        if "-h" in sys.argv:
+            with open("cline.txt", "r") as file:
+                print(file.read())
+        # Token override
+        if "-mtoken" in sys.argv:
+            token_index = sys.argv.index("-mtoken")
+            map_token = sys.argv[formatting_index + 1]
+
+        # Features Customization
+        if "-snat_list" in sys.argv:
+            snats_index = sys.argv.index("-snat_list")
+            map_content["subnat_list"] = (
+                sys.argv[snats_index + 1].replace("_", " ").split("+")
+            )
+        if "-nat_list" in sys.argv:
+            nats_index = sys.argv.index("-nat_list")
+            map_content["country_list"] = (
+                sys.argv[nats_index + 1].replace("_", " ").split("+")
+            )
+        if "-city_list" in sys.argv:
+            cities_index = sys.argv.index("-city_list")
+            city_names = sys.argv[cities_index + 1].replace("_", " ").split("+")
+            map_content["city_list"] = [[x, "middle right"] for x in city_names]
+        if "-cmarker" in sys.argv:
+            cfeature_index = sys.argv.index("-cmarker")
+            cfeature_list = []
+            for x in sys.argv[cfeature_index + 1].split("+"):
+                splitd = x.split(">")
+                cfeature_list.append(
+                    {
+                        "name": splitd[0].replace("_", " "),
+                        "lon": float(splitd[1]),
+                        "lat": float(splitd[2]),
+                        "position": splitd[3].replace("_", " "),
+                    }
+                )
+            map_content["irregular_markers"] = cfeature_list
+
+        # Display Toggles
+        if "-snats" in sys.argv:
+            map_settings["subnat_toggle"] = True
+        if "-snatlabels" in sys.argv:
+            map_settings["subnat_label_toggle"] = True
+        if "-natlabels" in sys.argv:
+            map_settings["nat_label_toggle"] = True
+
+        # Formatting Toggles
+        if "-background_color" in sys.argv:
+            formatting_index = sys.argv.index("-background_color")
+            map_styling["background_color"] = sys.argv[formatting_index + 1]
+        if "-nat_border_opacity" in sys.argv:
+            formatting_index = sys.argv.index("-nat_border_opacity")
+            map_styling["nat_border_opacity"] = sys.argv[formatting_index + 1]
+        if "-nat_border_width" in sys.argv:
+            formatting_index = sys.argv.index("-nat_border_width")
+            map_styling["nat_border_width"] = sys.argv[formatting_index + 1]
+        if "-nat_border_color" in sys.argv:
+            formatting_index = sys.argv.index("-nat_border_color")
+            map_styling["nat_border_color"] = sys.argv[formatting_index + 1]
+        if "-subnat_border_opacity" in sys.argv:
+            formatting_index = sys.argv.index("-subnat_border_opacity")
+            map_styling["subnat_border_opacity"] = sys.argv[formatting_index + 1]
+        if "-subnat_border_width" in sys.argv:
+            formatting_index = sys.argv.index("-subnat_border_width")
+            map_styling["subnat_border_width"] = sys.argv[formatting_index + 1]
+        if "-subnat_border_color" in sys.argv:
+            formatting_index = sys.argv.index("-subnat_border_color")
+            map_styling["subnat_border_color"] = sys.argv[formatting_index + 1]
+        # Marker/city formatting
+        if "-city_text_size" in sys.argv:
+            formatting_index = sys.argv.index("-city_text_size")
+            map_styling["city_text_size"] = sys.argv[formatting_index + 1]
+        if "-city_text_color" in sys.argv:
+            formatting_index = sys.argv.index("-city_text_color")
+            map_styling["city_text_color"] = sys.argv[formatting_index + 1]
+        if "-marker_size" in sys.argv:
+            formatting_index = sys.argv.index("-marker_size")
+            map_styling["marker_size"] = sys.argv[formatting_index + 1]
+        if "-marker_color" in sys.argv:
+            formatting_index = sys.argv.index("-marker_color")
+            map_styling["marker_color"] = sys.argv[formatting_index + 1]
+        # Label formatting
+        if "-nat_label_opacity" in sys.argv:
+            formatting_index = sys.argv.index("-nat_label_opacity")
+            map_styling["nat_label_opacity"] = sys.argv[formatting_index + 1]
+        if "-nat_label_size" in sys.argv:
+            formatting_index = sys.argv.index("-nat_label_size")
+            map_styling["nat_label_size"] = sys.argv[formatting_index + 1]
+        if "-nat_label_color" in sys.argv:
+            formatting_index = sys.argv.index("-nat_label_color")
+            map_styling["nat_label_color"] = sys.argv[formatting_index + 1]
+        if "-subnat_label_opacity" in sys.argv:
+            formatting_index = sys.argv.index("-subnat_label_opacity")
+            map_styling["subnat_label_opacity"] = sys.argv[formatting_index + 1]
+        if "-subnat_label_size" in sys.argv:
+            formatting_index = sys.argv.index("-subnat_label_size")
+            map_styling["subnat_label_size"] = sys.argv[formatting_index + 1]
+        if "-subnat_label_color" in sys.argv:
+            formatting_index = sys.argv.index("-subnat_label_color")
+            map_styling["subnat_label_color"] = sys.argv[formatting_index + 1]
+        # Feature formatting
+        if "-feature_color" in sys.argv:
+            formatting_index = sys.argv.index("-feature_color")
+            map_styling["city_text_color"] = sys.argv[formatting_index + 1]
+        if "-feature_fill_opacity" in sys.argv:
+            formatting_index = sys.argv.index("-feature_fill_opacity")
+            map_styling["city_text_color"] = sys.argv[formatting_index + 1]
+        if "-feature_border_opacity" in sys.argv:
+            formatting_index = sys.argv.index("-feature_border_opacity")
+            map_styling["city_text_color"] = sys.argv[formatting_index + 1]
+        if "-feature_border_width" in sys.argv:
+            formatting_index = sys.argv.index("-feature_border_width")
+            map_styling["city_text_color"] = sys.argv[formatting_index + 1]
+        if "-feature_border_color" in sys.argv:
+            formatting_index = sys.argv.index("-feature_border_color")
+            map_styling["city_text_color"] = sys.argv[formatting_index + 1]
+
+        # Label positions
+        if "-labelpos" in sys.argv:
+            label_index = sys.argv.index("-labelpos")
+            new_city_list = []
+            for x in sys.argv[label_index + 1].split("+"):
+                splitd = x.split(">")
+                new_city_list.append([splitd[0], splitd[1].replace("_", " ")])
+            map_content["city_list"] = new_city_list
+
+        # Format: [label, direction, extent, size_override (0 for unchanged)]
+        if "-labeladjust" in sys.argv:
+            label_index = sys.argv.index("-labeladjust")
+            # Check the input because this is a complicated one.
+            for y in sys.argv[label_index + 1].split("+"):
+                if y.count(">") != 3:
+                    print("Input error on -labeladjust; please try again.")
+                    sys.exit()
+                else:
+                    pass
+
+            new_adjust_list = []
+            for x in sys.argv[label_index + 1].split("+"):
+                splitd = x.split(">")
+                new_adjust_list.append(
+                    [
+                        splitd[0],
+                        splitd[1].replace("_", " "),
+                        float(splitd[2]),
+                        float(splitd[3]),
+                    ]
+                )
+            map_content["label_adjusts"] = new_adjust_list
+
+    commandline_interpreter()
+
     m = MapBuilder(map_token, map_settings, map_content, map_styling)
 
-    # Prepare CSV FILE/DF for mapping --> Requires an 'id' column to be matched with custom geojson
-    def regexer(string, input):
-        try:
-            return re.search(string, input).group(0)
-        except:
-            return "NaN"
-
-    csv_df = m.csvs[0]
-    csv_df = csv_df.loc[csv_df["Application status"] != "Refused"]
-    csv_df["id"] = 0
-    csv_df["Location"] = csv_df["Location"].apply(lambda x: x.strip())
-    csv_df["mw"] = csv_df["Project description"].apply(
-        lambda x: regexer("(\d+\.\d+|\d+)\s?MW", x).replace("MW", "").strip()
-    )
-    csv_df = csv_df.astype({"mw": float})
-    csv_df["mw"] = csv_df["mw"].apply(lambda x: round(x, 2))
-
-    location_grouped = csv_df.groupby("Location")["mw"].aggregate("sum")
-
-    # Prepare custom GEOJSON FILE/GEOJSON (Ontario) for mapping --> requires insertion of 'id' to be matched with above df (csv_df)
-    counter = 0
-    out_slice = []
-    for i in m.geojsons[0]["features"]:
-        counter += 1
-        i["id"] = counter
-        out_slice.append(i)
-    ontario = {"type": "FeatureCollection", "features": out_slice}
-
-    # Necessary formatting to adjust for disparate naming conventions on districts
-    def formatter(input):
-        if input != None:
-            if input["OFFICIAL_M"] != None:
-                if "leeds and grenville" in input["OFFICIAL_M"].lower():
-                    return (
-                        input["OFFICIAL_M"]
-                        .lower()
-                        .replace("and", "&")
-                        .replace("county", "")
-                        .replace("united counties of", "")
-                        .strip()
-                    )
-                if "city" in input["OFFICIAL_M"].lower():
-                    return input["OFFICIAL_M"].lower().split(" of ")[-1]
-                if (
-                    "county" in input["OFFICIAL_M"].lower()
-                    or "counties" in input["OFFICIAL_M"].lower()
-                ):
-                    return (
-                        input["OFFICIAL_M"]
-                        .lower()
-                        .replace("county of", "")
-                        .replace("united", "")
-                        .replace("counties", "")
-                        .replace("county", "")
-                        .strip()
-                    )
-                if "district" in input["OFFICIAL_M"].lower():
-                    try:
-                        return (
-                            input["OFFICIAL_M"]
-                            .lower()
-                            .replace("district of", "")
-                            .strip()
-                        )
-                    except:
-                        return (
-                            input["OFFICIAL_M"].lower().replace("district", "").strip()
-                        )
-                if "region" in input["OFFICIAL_M"].lower():
-                    return (
-                        input["OFFICIAL_M"]
-                        .lower()
-                        .replace("regional municipality of", "")
-                        .replace("region", "")
-                        .strip()
-                    )
-                if "municipality" in input["OFFICIAL_M"].lower():
-                    return (
-                        input["OFFICIAL_M"]
-                        .lower()
-                        .replace("municipality of", "")
-                        .strip()
-                    )
-                else:
-                    return input["OFFICIAL_M"].lower()
-            else:
-                if "leeds and grenville" in input["MUN_NAME"].lower():
-                    return (
-                        input["MUN_NAME"]
-                        .lower()
-                        .replace("and", "&")
-                        .replace("county", "")
-                        .replace("united counties of", "")
-                        .strip()
-                    )
-                if "city" in input["MUN_NAME"].lower():
-                    return input["MUN_NAME"].lower().split(" of ")[-1]
-                if (
-                    "county" in input["MUN_NAME"].lower()
-                    or "counties" in input["MUN_NAME"].lower()
-                ):
-                    if "stormont" in input["MUN_NAME"].lower():
-                        return (
-                            input["MUN_NAME"]
-                            .lower()
-                            .replace("counties of", "")
-                            .replace("and", "&")
-                            .replace("united", "")
-                            .strip()
-                        )
-                    else:
-                        return (
-                            input["MUN_NAME"]
-                            .lower()
-                            .replace("county of", "")
-                            .replace("united", "")
-                            .replace("counties of", "")
-                            .replace("county", "")
-                            .strip()
-                        )
-                if "district" in input["MUN_NAME"].lower():
-                    try:
-                        return (
-                            input["MUN_NAME"].lower().replace("district of", "").strip()
-                        )
-                    except:
-                        return input["MUN_NAME"].lower().replace("district", "").strip()
-                if "region" in input["MUN_NAME"].lower():
-                    return (
-                        input["MUN_NAME"]
-                        .lower()
-                        .replace("regional municipality of", "")
-                        .replace("region", "")
-                        .strip()
-                    )
-                if "municipality of" in input["MUN_NAME"].lower():
-                    return (
-                        input["MUN_NAME"].lower().replace("municipality of", "").strip()
-                    )
-                else:
-                    return input["MUN_NAME"].lower()
-
-        else:
-            return "NaN"
-
-    # Create a dictionary for easy reference of the name + id in the geojson
-    test_dict = {x["id"]: formatter(x["properties"]) for x in ontario["features"]}
-
-    # Adjust the dataframe to insert an 'id' value that matches the custom geojson
-    for index, row in csv_df.iterrows():
-        match_term = (
-            row["Location"]
-            .lower()
-            .replace("county of", "")
-            .replace("united counties of", "")
-            .replace("regional municipality of", "")
-            .replace("district of", "")
-            .replace("county", "")
-            .replace("region", "")
-            .replace("district", "")
-            .strip()
-        )
-        if match_term in list(test_dict.values()):
-            csv_df.at[index, "id"] = list(test_dict.keys())[
-                list(test_dict.values()).index(match_term)
-            ]
-
-    grouped = csv_df.groupby("id")[["mw"]].aggregate("sum")
-
-    grouped = grouped.loc[1:]
-
-    m.draw_map(grouped, ontario)
+    m.draw_map()
