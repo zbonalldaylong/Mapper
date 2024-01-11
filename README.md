@@ -26,30 +26,28 @@ Script to output a customized world map that combines Plotly/Mapbox base map wit
 
 ## Running from Command Line 
 
-Command line syntax: 
-
-###Flags
+### Flags
 -h : display help
 -mtoken : provide your own mapbox token to generate base map (see: https://docs.mapbox.com/help/getting-started/access-tokens/)
 
-###Display Toggles
+### Display Toggles
 -snats : display subnational borders for states/provinces (default off) 
 -natlabels : display state labels (default off)
 -snatlabels : display subnational labels (default off)
 
-###Features
+### Features
 -nat_list country1+country2+country3, etc. : specify which countries to include on map; use _ for spaces ('United_States_of_America')
 -snat_list snat1+snat2+snat3, etc. : specify which provinces to include on map; use _ for spaces ('British_Columbia')
 -city_list city1+city2+city3, etc. : specify cities to include on map; use _ for spaces ('Addis_Ababa')
 
-###Custom Features / Markers
+### Custom Features / Markers
 
 Custom features will be loaded and mapped automatically if the features subdirectory contains a file named feature_1.geojson; other features will be loaded as well (feature_2.geojson, etc.)
 Refer to custom feature styling options below to customize their appearance. 
 
 -cmarker name>lon>lat>label_position :  Place a custom point on the map by longitude and latitude (example: Taj_Mahal>78.04206>27.17389>middle_right)
 
-###Formatting Toggles
+### Formatting Toggles
 -background_color : Override the background color of the map (formatted as color code; default #ede7f1)
 -nat_border_opacity : Override opacity of national borders (default 1)
 -nat_border_width : Override width of national borders (default 1) 
@@ -79,7 +77,7 @@ Custom Feature Styling (geojsons)
 -feature_border_width : (default 1)
 -feature_border_color : (default #282828)
 
-###Label Adjustments
+### Label Adjustments
 
 Labels occasionally require manual adjustment depending on map context. This can be achieved using the following commands:
 
@@ -91,8 +89,7 @@ Examples: -labelpos Vancouver>middle_right+Kamloops>bottom_left
 Note: Label shifting extent is approximately 4 per inch ; label size is a multiplier of current value (for example, 2 is 2x) ; countries can be repeated for finishing touches 
 Examples: -labeladjust United_States_of_America>top_left>10>2+Canada>bottom_left>4>1
 
-
-###Examples
+### Command Line Examples
 
 python mapper.py -nat_list Ukraine -city_list Odesa+Donetsk+Kharkiv -snats -cfeature Zaporizhzhia_Nuclear_Plant>34.584>47.50>bottom_right
 
